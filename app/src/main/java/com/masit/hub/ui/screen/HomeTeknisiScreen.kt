@@ -92,7 +92,7 @@ fun HomeTeknisiScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .padding(bottom = 10.dp),
-                        onTangani = { onKelolaAduan(aduan.id) },
+                        onTangani = { AppState.tanganiAduan(aduan.id) }, // langsung ubah status, tidak navigasi
                         onDetail = { onKelolaAduan(aduan.id) }
                     )
                 }
@@ -177,7 +177,7 @@ fun AduanTeknisiCard(
 
             // Tombol aksi — sesuai status
             if (aduan.status == StatusAduan.MENUNGGU) {
-                // Tombol Tangani — Build (kunci inggris) serasi dengan icon Material lain
+                // Langsung ubah status tanpa navigasi
                 Button(
                     onClick = onTangani,
                     modifier = Modifier.fillMaxWidth().height(42.dp),
@@ -188,16 +188,12 @@ fun AduanTeknisiCard(
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Build,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Filled.Build, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Tangani Aduan", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
-                // Tombol Detail & Update — Assignment icon serasi
+                // Masuk ke KelolaAduan untuk update detail
                 OutlinedButton(
                     onClick = onDetail,
                     modifier = Modifier.fillMaxWidth().height(42.dp),
@@ -208,11 +204,7 @@ fun AduanTeknisiCard(
                     ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AccentYellow)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Assignment,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Filled.Assignment, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Detail & Update", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }

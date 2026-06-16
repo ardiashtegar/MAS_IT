@@ -57,45 +57,44 @@ data class RiwayatUpdate(
     val waktu: String
 )
 
-// ─── Dummy Users ──────────────────────────────────────────────────────────────
-
-val dummyUsers = listOf(
-    User(
-        id = "u001",
-        namaLengkap = "Budi Santoso",
-        idKaryawan = "HR-12345",
-        email = "budi.s@company.id",
-        role = UserRole.USER,
-        department = "HR Department",
-        username = "budi.s",
-        password = "password123"
-    ),
-    User(
-        id = "u002",
-        namaLengkap = "Ahmad Teknisi",
-        idKaryawan = "IT-00123",
-        email = "ahmad.t@company.id",
-        role = UserRole.TEKNISI,
-        department = "IT Department",
-        username = "ahmad.t",
-        password = "password123"
-    ),
-    User(
-        id = "u003",
-        namaLengkap = "Sari Wulandari",
-        idKaryawan = "DS-00456",
-        email = "sari.w@company.id",
-        role = UserRole.USER,
-        department = "Design Department",
-        username = "sari.w",
-        password = "password123"
-    )
-)
-
 // ─── App State ────────────────────────────────────────────────────────────────
 
 object AppState {
     var currentUser: User? = null
+
+    // mutableStateListOf agar perubahan password langsung reaktif
+    val userList = mutableStateListOf(
+        User(
+            id = "u001",
+            namaLengkap = "Budi Santoso",
+            idKaryawan = "HR-12345",
+            email = "ardiashtegar125@gmail.com",
+            role = UserRole.USER,
+            department = "HR Department",
+            username = "budi.s",
+            password = "password123"
+        ),
+        User(
+            id = "u002",
+            namaLengkap = "Ahmad Teknisi",
+            idKaryawan = "IT-00123",
+            email = "ahmad.t@company.id",
+            role = UserRole.TEKNISI,
+            department = "IT Department",
+            username = "ahmad.t",
+            password = "password123"
+        ),
+        User(
+            id = "u003",
+            namaLengkap = "Sari Wulandari",
+            idKaryawan = "DS-00456",
+            email = "sari.w@company.id",
+            role = UserRole.USER,
+            department = "Design Department",
+            username = "sari.w",
+            password = "password123"
+        )
+    )
 
     // mutableStateListOf agar Compose otomatis recompose saat list berubah
     val aduanList = mutableStateListOf(
@@ -170,13 +169,40 @@ object AppState {
     )
 
     fun login(username: String, password: String): User? {
-        val user = dummyUsers.find { it.username == username && it.password == password }
+        val user = userList.find { it.username == username && it.password == password }
         currentUser = user
         return user
     }
 
     fun logout() {
         currentUser = null
+    }
+
+    // ── Reset password via OTP (lupa password) ────────────────────────────────
+    // Cari user berdasarkan email yang sudah diverifikasi OTP
+    fun resetPassword(email: String, passwordBaru: String): Boolean {
+        val index = userList.indexOfFirst {
+            it.email.equals(email, ignoreCase = true)
+        }
+        if (index == -1) return false
+        val updatedUser = userList[index].copy(password = passwordBaru)
+        userList[index] = updatedUser
+        // Jika user ini sedang login, update currentUser juga
+        if (currentUser?.email?.equals(email, ignoreCase = true) == true) {
+            currentUser = updatedUser
+        }
+        return true
+    }
+    // Return: true = berhasil, false = password lama salah
+    fun gantiPassword(passwordLama: String, passwordBaru: String): Boolean {
+        val user = currentUser ?: return false
+        val index = userList.indexOfFirst { it.id == user.id }
+        if (index == -1) return false
+        if (userList[index].password != passwordLama) return false
+        val updatedUser = userList[index].copy(password = passwordBaru)
+        userList[index] = updatedUser
+        currentUser = updatedUser   // update referensi currentUser juga
+        return true
     }
 
     // ── Tambah aduan baru dari form BuatAduan ─────────────────────────────────

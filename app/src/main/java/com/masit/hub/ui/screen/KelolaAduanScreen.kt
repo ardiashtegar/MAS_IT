@@ -43,24 +43,11 @@ fun KelolaAduanScreen(
     // derivedStateOf dari mutableStateListOf — reactive ke semua screen
     val aduan by remember { derivedStateOf { AppState.getAduanById(aduanId) } }
 
-    // Saat halaman dibuka, jika masih MENUNGGU langsung tangani
-    // (teknisi klik tombol "Tangani Aduan" → masuk ke sini)
-    LaunchedEffect(aduanId) {
-        val current = AppState.getAduanById(aduanId)
-        if (current?.status == StatusAduan.MENUNGGU) {
-            AppState.tanganiAduan(aduanId)
-        }
-    }
-
     var selectedStatus by remember { mutableStateOf(aduan?.status ?: StatusAduan.DITANGANI) }
     var catatan by remember { mutableStateOf("") }
+    var catatanError by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
     var previewFotoUri by remember { mutableStateOf<String?>(null) }
-
-    // Sync selectedStatus jika aduan berubah (misal setelah LaunchedEffect tanganiAduan)
-    LaunchedEffect(aduan?.status) {
-        aduan?.status?.let { selectedStatus = it }
-    }
 
     // ── Dialog sukses ─────────────────────────────────────────────────────────
     if (showSuccessDialog) {
@@ -165,8 +152,12 @@ fun KelolaAduanScreen(
             ) {
                 Button(
                     onClick = {
-                        // Update mutableStateListOf → semua screen yang observe ikut berubah:
-                        // HomeUserScreen, DetailAduanScreen, RiwayatUserScreen
+                        // Validasi: catatan wajib diisi jika status Batal
+                        if (selectedStatus == StatusAduan.BATAL && catatan.isBlank()) {
+                            catatanError = true
+                            return@Button
+                        }
+                        catatanError = false
                         AppState.updateAduan(
                             id = aduanId,
                             statusBaru = selectedStatus,
@@ -256,7 +247,10 @@ fun KelolaAduanScreen(
                                 label = status.label,
                                 selected = selectedStatus == status,
                                 modifier = Modifier.weight(1f),
-                                onClick = { selectedStatus = status }
+                                onClick = {
+                                    selectedStatus = status
+                                    if (status != StatusAduan.BATAL) catatanError = false
+                                }
                             )
                         }
                 }
@@ -264,15 +258,39 @@ fun KelolaAduanScreen(
 
             // ── Catatan Teknisi ───────────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("CATATAN TEKNISI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.8.sp, color = TextSecondary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("CATATAN TEKNISI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.8.sp, color = TextSecondary)
+                    // Penanda wajib saat status Batal dipilih
+                    if (selectedStatus == StatusAduan.BATAL) {
+                        Text(
+                            "  *wajib diisi jika Batal",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
                 OutlinedTextField(
                     value = catatan,
-                    onValueChange = { catatan = it },
+                    onValueChange = {
+                        catatan = it
+                        if (catatanError) catatanError = false
+                    },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                     placeholder = {
-                        Text("Tambahkan catatan penanganan...", color = TextHint, fontSize = 13.sp)
+                        Text(
+                            if (selectedStatus == StatusAduan.BATAL)
+                                "Tuliskan alasan pembatalan..."
+                            else
+                                "Tambahkan catatan penanganan...",
+                            color = TextHint,
+                            fontSize = 13.sp
+                        )
                     },
+                    isError = catatanError,
+                    supportingText = if (catatanError) {
+                        { Text("Catatan wajib diisi untuk status Batal", color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }
+                    } else null,
                     singleLine = false,
                     maxLines = 5,
                     shape = RoundedCornerShape(10.dp),
