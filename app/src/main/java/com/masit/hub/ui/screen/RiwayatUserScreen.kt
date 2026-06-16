@@ -167,7 +167,7 @@ fun EmptyRiwayat() {
 @Preview(name = "Riwayat User Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun RiwayatUserScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         RiwayatUserScreen(
             onHome = {},
             onDetailAduan = {},

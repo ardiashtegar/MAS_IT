@@ -61,14 +61,8 @@ fun BuatPasswordBaruScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        showSuccessDialog = false
-                        onPasswordSaved()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentYellow,
-                        contentColor = PrimaryBlue
-                    ),
+                    onClick = { showSuccessDialog = false; onPasswordSaved() },
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentYellow, contentColor = PrimaryBlue),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Login Sekarang", fontWeight = FontWeight.Bold)
@@ -83,20 +77,11 @@ fun BuatPasswordBaruScreen(
             Column {
                 TopAppBar(
                     title = {
-                        Text(
-                            "Buat Password Baru",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlue
-                        )
+                        Text("Buat Password Baru", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Kembali",
-                                tint = PrimaryBlue
-                            )
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = PrimaryBlue)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
@@ -239,7 +224,7 @@ fun BuatPasswordBaruScreen(
 @Preview(name = "Buat Password Baru", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun BuatPasswordBaruScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         BuatPasswordBaruScreen(onBack = {}, onPasswordSaved = {})
     }
 }

@@ -306,7 +306,7 @@ fun ProfilInfoRow(
 @Preview(name = "Profil Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun ProfilScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         ProfilScreen(onBack = {}, onGantiPassword = {}, onLogout = {})
     }
 }

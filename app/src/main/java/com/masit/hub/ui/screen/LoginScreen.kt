@@ -1,11 +1,9 @@
 package com.masit.hub.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.Devices
-import com.masit.hub.ui.theme.MasITTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,19 +18,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masit.hub.R
 import com.masit.hub.data.AppState
 import com.masit.hub.data.UserRole
 import com.masit.hub.navigation.Routes
 import com.masit.hub.ui.theme.*
+import com.masit.hub.ui.theme.MasITTheme
 
 @Composable
 fun LoginScreen(
@@ -56,7 +58,7 @@ fun LoginScreen(
                 .padding(top = 56.dp, bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // App icon box
+            // App icon box — logo asli dari drawable
             Box(
                 modifier = Modifier
                     .size(80.dp)
@@ -64,7 +66,14 @@ fun LoginScreen(
                     .background(Color.White),
                 contentAlignment = Alignment.Center
             ) {
-                MasItLogo()
+                Image(
+                    painter = painterResource(id = R.drawable.ic_masit_logo),
+                    contentDescription = "Logo MAS IT",
+                    modifier = Modifier
+                        .size(56.dp)
+                        .padding(2.dp),
+                    contentScale = ContentScale.Fit
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -278,85 +287,8 @@ fun LoginScreen(
     }
 }
 
-// ─── MAS IT Logo Composable ───────────────────────────────────────────────────
-@Composable
-fun MasItLogo(
-    modifier: Modifier = Modifier,
-    color: Color = PrimaryBlue
-) {
-    // Simple SVG-like recreation of the MAS IT logo using Box + shapes
-    // The logo shows a person icon above with a road/path below
-    Box(
-        modifier = modifier.size(48.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Head (small circle)
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(AccentYellow)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            // Body / road icon
-            Box(
-                modifier = Modifier
-                    .width(32.dp)
-                    .height(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // Left arm / road side
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(10.dp)
-                            .height(18.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 2.dp,
-                                    topEnd = 6.dp,
-                                    bottomStart = 2.dp,
-                                    bottomEnd = 2.dp
-                                )
-                            )
-                            .background(color)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(10.dp)
-                            .height(18.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 6.dp,
-                                    topEnd = 2.dp,
-                                    bottomStart = 2.dp,
-                                    bottomEnd = 2.dp
-                                )
-                            )
-                            .background(color)
-                    )
-                }
-            }
-        }
-    }
-}
-
 // ─── Preview ──────────────────────────────────────────────────────────────────
-@Preview(
-    name = "Login Screen",
-    showBackground = true,
-    device = Devices.PIXEL_4,
-    widthDp = 360,
-    heightDp = 800
-)
+@Preview(name = "Login Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun LoginScreenPreview() {
     MasITTheme {

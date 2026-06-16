@@ -1,5 +1,6 @@
 package com.masit.hub.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.History
@@ -19,11 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masit.hub.R
 import com.masit.hub.data.*
 import com.masit.hub.ui.theme.*
 
@@ -117,7 +122,7 @@ fun HomeUserScreen(
                 }
             }
 
-            // ── [FIX 2] Sort Dropdown — kirim state ke bawah ─────────────────
+            // ── Sort Dropdown — kirim state ke bawah ─────────────────────────
             item {
                 Spacer(modifier = Modifier.height(14.dp))
                 SortDropdown(
@@ -128,16 +133,20 @@ fun HomeUserScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // ── Aduan List (menggunakan sortedList) ───────────────────────────
-            items(sortedList) { aduan ->
-                AduanCard(
-                    aduan = aduan,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 10.dp),
-                    onClick = { onDetailAduan(aduan.id) }
-                )
+            // ── Aduan List atau Empty State ───────────────────────────────────
+            if (sortedList.isEmpty()) {
+                item { EmptyAduanUser() }
+            } else {
+                items(sortedList) { aduan ->
+                    AduanCard(
+                        aduan = aduan,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 10.dp),
+                        onClick = { onDetailAduan(aduan.id) }
+                    )
+                }
             }
         }
     }
@@ -155,7 +164,12 @@ fun HomeUserTopBar(onProfil: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            MasItLogo(modifier = Modifier.size(28.dp), color = PrimaryBlue)
+            Image(
+                painter = painterResource(id = R.drawable.ic_masit_logo),
+                contentDescription = "Logo MAS IT",
+                modifier = Modifier.size(28.dp),
+                contentScale = ContentScale.Fit
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = "MAS IT", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
         }
@@ -194,7 +208,7 @@ fun StatCard(modifier: Modifier = Modifier, count: Int, label: String) {
     }
 }
 
-// ─── [FIX 2] Sort Dropdown — terima selected & onSelected dari luar ───────────
+// ─── Sort Dropdown — terima selected & onSelected dari luar ───────────────────
 @Composable
 fun SortDropdown(
     selected: String,
@@ -336,17 +350,47 @@ fun BottomNavUser(
     }
 }
 
+// ─── Empty State User ─────────────────────────────────────────────────────────
+@Composable
+fun EmptyAduanUser() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Inbox,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = TextHint
+            )
+            Text(
+                text = "Belum ada aduan aktif",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary
+            )
+            Text(
+                text = "Ketuk tombol di atas untuk\nmembuat aduan baru",
+                fontSize = 13.sp,
+                color = TextHint,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
+            )
+        }
+    }
+}
+
 // ─── Preview ──────────────────────────────────────────────────────────────────
-@Preview(
-    name = "Home User Screen",
-    showBackground = true,
-    device = Devices.PIXEL_4,
-    widthDp = 360,
-    heightDp = 800
-)
+@Preview(name = "Home User Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun HomeUserScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         HomeUserScreen(
             onBuatAduan = {},
             onDetailAduan = {},

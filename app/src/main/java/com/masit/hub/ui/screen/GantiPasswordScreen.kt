@@ -264,7 +264,7 @@ fun GantiPasswordScreen(
 @Preview(name = "Ganti Password Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun GantiPasswordScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         GantiPasswordScreen(onBack = {}, onSaved = {})
     }
 }

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Router
@@ -453,15 +452,10 @@ fun outlinedFieldColors() = OutlinedTextFieldDefaults.colors(
 )
 
 // ─── Preview ─────────────────────────────────────────────────────────────────
-@Preview(
-    name = "Buat Aduan Screen",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 800
-)
+@Preview(name = "Buat Aduan Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun BuatAduanScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         BuatAduanScreen(onBack = {}, onSubmit = {})
     }
 }

@@ -204,7 +204,7 @@ fun EmptyRiwayatTeknisi() {
 @Preview(name = "Riwayat Teknisi Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun RiwayatTeknisiScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         RiwayatTeknisiScreen(onHome = {}, onProfil = {})
     }
 }

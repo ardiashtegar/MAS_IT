@@ -1,5 +1,6 @@
 package com.masit.hub.ui.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,7 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Person
@@ -19,11 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.masit.hub.R
 import com.masit.hub.data.AppState
 import com.masit.hub.data.StatusAduan
 import com.masit.hub.ui.theme.*
@@ -113,9 +117,14 @@ fun HomeTeknisiTopBar(onProfil: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            MasItLogo(modifier = Modifier.size(28.dp), color = PrimaryBlue)
+            Image(
+                painter = painterResource(id = R.drawable.ic_masit_logo),
+                contentDescription = "Logo MAS IT",
+                modifier = Modifier.size(28.dp),
+                contentScale = ContentScale.Fit
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("MAS IT", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
+            Text(text = "MAS IT", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
         }
         Box(
             modifier = Modifier
@@ -132,7 +141,6 @@ fun HomeTeknisiTopBar(onProfil: () -> Unit) {
 }
 
 // ─── Card Aduan Teknisi ───────────────────────────────────────────────────────
-// Sesuai mockup halaman 6: ada tombol "Tangani Aduan" atau "Detail & Update"
 @Composable
 fun AduanTeknisiCard(
     aduan: com.masit.hub.data.Aduan,
@@ -204,46 +212,11 @@ fun AduanTeknisiCard(
                     ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, AccentYellow)
                 ) {
-                    Icon(Icons.Filled.Assignment, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Detail & Update", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
-        }
-    }
-}
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
-@Composable
-fun EmptyAduan() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Inbox,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = TextHint
-            )
-            Text(
-                text = "Tidak ada aduan",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextSecondary
-            )
-            Text(
-                text = "Semua aduan sudah tertangani",
-                fontSize = 13.sp,
-                color = TextHint,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
@@ -301,11 +274,46 @@ fun BottomNavTeknisi(
     }
 }
 
+// ─── Empty state ──────────────────────────────────────────────────────────────
+@Composable
+fun EmptyAduan() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 80.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Inbox,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = TextHint
+            )
+            Text(
+                text = "Tidak ada aduan",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary
+            )
+            Text(
+                text = "Semua aduan sudah tertangani",
+                fontSize = 13.sp,
+                color = TextHint,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
 // ─── Preview ─────────────────────────────────────────────────────────────────
 @Preview(name = "Home Teknisi Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun HomeTeknisiScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         HomeTeknisiScreen(
             onKelolaAduan = {},
             onRiwayat = {},

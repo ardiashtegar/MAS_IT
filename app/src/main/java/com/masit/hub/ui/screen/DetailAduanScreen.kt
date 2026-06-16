@@ -1,6 +1,5 @@
 package com.masit.hub.ui.screen
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +33,7 @@ import com.masit.hub.data.AppState
 import com.masit.hub.data.RiwayatUpdate
 import com.masit.hub.data.StatusAduan
 import com.masit.hub.ui.theme.*
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,15 +71,8 @@ fun DetailAduanScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = {
-                        AppState.batalkanAduan(aduanId)
-                        showKonfirmasiBatal = false
-                        onBack()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = DangerRed,
-                        contentColor = Color.White
-                    ),
+                    onClick = { AppState.batalkanAduan(aduanId); showKonfirmasiBatal = false; onBack() },
+                    colors = ButtonDefaults.buttonColors(containerColor = DangerRed, contentColor = Color.White),
                     shape = RoundedCornerShape(10.dp)
                 ) { Text("Ya, Batalkan", fontWeight = FontWeight.Bold) }
             },
@@ -107,7 +100,7 @@ fun DetailAduanScreen(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(Uri.parse(previewFotoUri))
+                        .data(previewFotoUri?.toUri())
                         .crossfade(false)
                         .build(),
                     contentDescription = "Preview foto",
@@ -223,9 +216,7 @@ fun DetailAduanScreen(
                 border = androidx.compose.foundation.BorderStroke(0.8.dp, InputBorder)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Ticket + Status
@@ -248,16 +239,8 @@ fun DetailAduanScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        DetailInfoItem(
-                            modifier = Modifier.weight(1f),
-                            label = "KATEGORI",
-                            value = data.kategori.label
-                        )
-                        DetailInfoItem(
-                            modifier = Modifier.weight(1f),
-                            label = "LOKASI",
-                            value = data.lokasi
-                        )
+                        DetailInfoItem(modifier = Modifier.weight(1f), label = "KATEGORI", value = data.kategori.label)
+                        DetailInfoItem(modifier = Modifier.weight(1f), label = "LOKASI", value = data.lokasi)
                     }
 
                     // Deskripsi
@@ -274,10 +257,7 @@ fun DetailAduanScreen(
                                 letterSpacing = 0.8.sp, color = TextSecondary)
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 itemsIndexed(data.fotoUris) { _, uriStr ->
-                                    FotoLampiranItem(
-                                        uriStr = uriStr,
-                                        onClick = { previewFotoUri = uriStr }
-                                    )
+                                    FotoLampiranItem(uriStr = uriStr, onClick = { previewFotoUri = uriStr })
                                 }
                             }
                         }
@@ -332,7 +312,7 @@ fun FotoLampiranItem(uriStr: String, onClick: () -> Unit) {
     ) {
         AsyncImage(
             model = ImageRequest.Builder(context)
-                .data(Uri.parse(uriStr))
+                .data(uriStr.toUri())
                 .size(160, 160)   // 2x ukuran tampil
                 .crossfade(false)
                 .build(),
@@ -406,7 +386,7 @@ fun RiwayatItem(riwayat: RiwayatUpdate, isFirst: Boolean, isLast: Boolean) {
 @Preview(name = "Detail Aduan Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun DetailAduanScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         DetailAduanScreen(aduanId = "a001", onBack = {})
     }
 }

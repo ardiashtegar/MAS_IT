@@ -49,7 +49,7 @@ fun LupaPasswordScreen(
     var isVerifying by remember { mutableStateOf(false) }
 
     // Countdown 10 menit
-    var sisaDetik by remember { mutableStateOf(0) }
+    var sisaDetik by remember { mutableIntStateOf(0) }
     LaunchedEffect(otpTerkirim) {
         if (otpTerkirim) {
             sisaDetik = 10 * 60
@@ -248,14 +248,15 @@ fun LupaPasswordScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Tidak menerima kode? ", fontSize = 12.sp, color = TextSecondary)
-                        val bisaKirimUlang = otpTerkirim && sisaDetik == 0
                         Text(
                             text = "Kirim ulang",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (bisaKirimUlang) PrimaryBlue else TextHint,
-                            modifier = if (bisaKirimUlang) Modifier.clickable {
+                            color = if (otpTerkirim && !isSending) PrimaryBlue else TextHint,
+                            modifier = if (otpTerkirim && !isSending) Modifier.clickable {
                                 otpTerkirim = false
+                                repeat(6) { otpDigits[it] = "" }
+                                otpError = ""
                                 kirimOtp()
                             } else Modifier
                         )
@@ -370,7 +371,7 @@ fun OtpDigitBox(
 @Preview(name = "Lupa Password Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun LupaPasswordScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         LupaPasswordScreen(onBack = {}, onNavigateToBuatPassword = {})
     }
 }

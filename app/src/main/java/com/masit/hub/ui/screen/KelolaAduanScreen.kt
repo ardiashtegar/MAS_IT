@@ -1,6 +1,5 @@
 package com.masit.hub.ui.screen
 
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,10 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +32,7 @@ import coil.request.ImageRequest
 import com.masit.hub.data.AppState
 import com.masit.hub.data.StatusAduan
 import com.masit.hub.ui.theme.*
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,18 +86,36 @@ fun KelolaAduanScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black)
-                    .clickable { previewFotoUri = null },
-                contentAlignment = Alignment.Center
+                    .clickable { previewFotoUri = null }
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
-                        .data(Uri.parse(previewFotoUri))
+                        .data(previewFotoUri?.toUri())
                         .crossfade(false)
                         .build(),
                     contentDescription = "Preview foto",
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
                     contentScale = ContentScale.Fit
                 )
+                // Tombol tutup
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .size(36.dp)
+                        .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                        .clickable { previewFotoUri = null },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "Tutup",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
@@ -336,7 +356,7 @@ fun StatusPilihButton(
 @Preview(name = "Kelola Aduan Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun KelolaAduanScreenPreview() {
-    com.masit.hub.ui.theme.MasITTheme {
+    MasITTheme {
         KelolaAduanScreen(aduanId = "a001", onBack = {})
     }
 }
