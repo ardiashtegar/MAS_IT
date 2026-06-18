@@ -150,6 +150,7 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.RIWAYAT_TEKNISI) {
                             RiwayatTeknisiScreen(
                                 onHome = { navController.navigate(Routes.HOME_TEKNISI) { popUpTo(Routes.HOME_TEKNISI) { inclusive = true } } },
+                                onDetailAduan = { id -> navController.navigate(Routes.detailAduan(id)) },
                                 onProfil = { navController.navigate(Routes.PROFIL) }
                             )
                         }

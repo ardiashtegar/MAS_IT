@@ -1,35 +1,31 @@
 package com.masit.hub.ui.screen
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Inbox
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.masit.hub.R
 import com.masit.hub.data.AppState
+import com.masit.hub.data.Aduan
 import com.masit.hub.data.StatusAduan
+import com.masit.hub.data.formatWaktuRelatif
+import com.masit.hub.ui.component.BottomNavTeknisi
+import com.masit.hub.ui.component.EmptyState
+import com.masit.hub.ui.component.HomeTopBar
+import com.masit.hub.ui.component.SortDropdown
+import com.masit.hub.ui.component.StatusBadgeText
 import com.masit.hub.ui.theme.*
 
 @Composable
@@ -38,10 +34,7 @@ fun HomeTeknisiScreen(
     onRiwayat: () -> Unit,
     onProfil: () -> Unit
 ) {
-    // derivedStateOf — reaktif, hanya recompute saat aduanList berubah
-    val aduanList by remember {
-        derivedStateOf { AppState.getAduanForTeknisi() }
-    }
+    val aduanList by remember { derivedStateOf { AppState.getAduanForTeknisi() } }
 
     var sortMode by remember { mutableStateOf("Terbaru") }
     val sortedList by remember {
@@ -53,28 +46,25 @@ fun HomeTeknisiScreen(
         }
     }
 
+    // Auto-refresh waktu relatif setiap 60 detik
+    var tick by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(60_000L)
+            tick = System.currentTimeMillis()
+        }
+    }
+
     Scaffold(
         containerColor = BackgroundLight,
-        bottomBar = {
-            BottomNavTeknisi(
-                selectedTab = 0,
-                onAduan = {},
-                onRiwayat = onRiwayat
-            )
-        }
+        bottomBar = { BottomNavTeknisi(selectedTab = 0, onAduan = {}, onRiwayat = onRiwayat) }
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // ── Top Bar ───────────────────────────────────────────────────────
-            item {
-                HomeTeknisiTopBar(onProfil = onProfil)
-            }
+            item { HomeTopBar(onProfil = onProfil) }
 
-            // ── Sort Dropdown ─────────────────────────────────────────────────
             item {
                 Spacer(modifier = Modifier.height(14.dp))
                 SortDropdown(
@@ -85,18 +75,21 @@ fun HomeTeknisiScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // ── List aduan atau empty state ───────────────────────────────────
             if (sortedList.isEmpty()) {
-                item { EmptyAduan() }
+                item {
+                    EmptyState(
+                        icon = Icons.Filled.Inbox,
+                        title = "Tidak ada aduan",
+                        subtitle = "Semua aduan sudah tertangani"
+                    )
+                }
             } else {
                 items(items = sortedList, key = { it.id }) { aduan ->
                     AduanTeknisiCard(
                         aduan = aduan,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 10.dp),
-                        onTangani = { AppState.tanganiAduan(aduan.id) }, // langsung ubah status, tidak navigasi
+                        tick = tick,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 10.dp),
+                        onTangani = { AppState.tanganiAduan(aduan.id) },
                         onDetail = { onKelolaAduan(aduan.id) }
                     )
                 }
@@ -105,95 +98,50 @@ fun HomeTeknisiScreen(
     }
 }
 
-// ─── Top Bar Teknisi ──────────────────────────────────────────────────────────
-@Composable
-fun HomeTeknisiTopBar(onProfil: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(BackgroundLight)
-            .padding(horizontal = 16.dp, vertical = 14.dp),  // sama persis HomeUserScreen
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_masit_logo),
-                contentDescription = "Logo MAS IT",
-                modifier = Modifier.size(28.dp),
-                contentScale = ContentScale.Fit
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "MAS IT", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
-        }
-        Box(
-            modifier = Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .clickable { onProfil() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Filled.Person, contentDescription = "Profil", tint = PrimaryBlue, modifier = Modifier.size(22.dp))
-        }
-    }
-    HorizontalDivider(color = InputBorder, thickness = 0.8.dp)
-}
-
-// ─── Card Aduan Teknisi ───────────────────────────────────────────────────────
 @Composable
 fun AduanTeknisiCard(
-    aduan: com.masit.hub.data.Aduan,
+    aduan: Aduan,
+    tick: Long,
     modifier: Modifier = Modifier,
     onTangani: () -> Unit,
     onDetail: () -> Unit
 ) {
+    val waktuRelatif = remember(tick) {
+        formatWaktuRelatif(aduan.createdAt)
+    }
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = androidx.compose.foundation.BorderStroke(0.8.dp, InputBorder)
+        border = BorderStroke(0.8.dp, InputBorder)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Ticket + status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 Text(aduan.ticketNumber, fontSize = 11.sp, color = TextHint, fontWeight = FontWeight.Medium)
                 StatusBadgeText(status = aduan.status)
             }
-
-            // Judul
             Text(aduan.judul, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-
-            // Pelapor + Lokasi
             Text(
-                "${aduan.pelapor} · ${aduan.lokasi}",
+                text = "${aduan.pelapor} · ${aduan.lokasi} · $waktuRelatif",
                 fontSize = 12.sp,
                 color = TextSecondary
             )
-
             Spacer(modifier = Modifier.height(2.dp))
-
-            // Tombol aksi — sesuai status
             if (aduan.status == StatusAduan.MENUNGGU) {
-                // Langsung ubah status tanpa navigasi
                 Button(
                     onClick = onTangani,
                     modifier = Modifier.fillMaxWidth().height(42.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentYellow,
-                        contentColor = PrimaryBlue
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentYellow, contentColor = PrimaryBlue),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Icon(Icons.Filled.Build, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -201,7 +149,6 @@ fun AduanTeknisiCard(
                     Text("Tangani Aduan", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
-                // Masuk ke KelolaAduan untuk update detail
                 OutlinedButton(
                     onClick = onDetail,
                     modifier = Modifier.fillMaxWidth().height(42.dp),
@@ -210,7 +157,7 @@ fun AduanTeknisiCard(
                         containerColor = AccentYellow.copy(alpha = 0.15f),
                         contentColor = PrimaryBlue
                     ),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, AccentYellow)
+                    border = BorderStroke(1.dp, AccentYellow)
                 ) {
                     Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
@@ -221,103 +168,8 @@ fun AduanTeknisiCard(
     }
 }
 
-// ─── Bottom Nav Teknisi ───────────────────────────────────────────────────────
-@Composable
-fun BottomNavTeknisi(
-    selectedTab: Int,       // 0 = Aduan Masuk, 1 = Riwayat
-    onAduan: () -> Unit,
-    onRiwayat: () -> Unit
-) {
-    NavigationBar(
-        containerColor = PrimaryBlue,
-        tonalElevation = 0.dp,
-        modifier = Modifier.height(80.dp)
-    ) {
-        NavigationBarItem(
-            selected = selectedTab == 0,
-            onClick = onAduan,
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.Inbox,
-                    contentDescription = "Aduan Masuk",
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            label = { Text("Aduan Masuk", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = Color.White.copy(alpha = 0.6f),
-                unselectedTextColor = Color.White.copy(alpha = 0.6f),
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            selected = selectedTab == 1,
-            onClick = onRiwayat,
-            icon = {
-                Icon(
-                    imageVector = Icons.Outlined.History,
-                    contentDescription = "Riwayat",
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            label = { Text("Riwayat", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = AccentYellow,
-                selectedTextColor = AccentYellow,
-                unselectedIconColor = Color.White.copy(alpha = 0.6f),
-                unselectedTextColor = Color.White.copy(alpha = 0.6f),
-                indicatorColor = Color.Transparent
-            )
-        )
-    }
-}
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
-@Composable
-fun EmptyAduan() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 80.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Inbox,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = TextHint
-            )
-            Text(
-                text = "Tidak ada aduan",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextSecondary
-            )
-            Text(
-                text = "Semua aduan sudah tertangani",
-                fontSize = 13.sp,
-                color = TextHint,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-// ─── Preview ─────────────────────────────────────────────────────────────────
 @Preview(name = "Home Teknisi Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun HomeTeknisiScreenPreview() {
-    MasITTheme {
-        HomeTeknisiScreen(
-            onKelolaAduan = {},
-            onRiwayat = {},
-            onProfil = {}
-        )
-    }
+    MasITTheme { HomeTeknisiScreen(onKelolaAduan = {}, onRiwayat = {}, onProfil = {}) }
 }

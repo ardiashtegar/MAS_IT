@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,6 +30,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.masit.hub.data.AppState
 import com.masit.hub.data.StatusAduan
+import com.masit.hub.ui.component.DetailInfoItem
+import com.masit.hub.ui.component.FotoLampiranItem
+import com.masit.hub.ui.component.KonfirmasiDialog
+import com.masit.hub.ui.component.PrimaryButton
+import com.masit.hub.ui.component.outlinedFieldColors
 import com.masit.hub.ui.theme.*
 import androidx.core.net.toUri
 
@@ -41,80 +45,42 @@ fun KelolaAduanScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-
-    // derivedStateOf dari mutableStateListOf — reactive ke semua screen
     val aduan by remember { derivedStateOf { AppState.getAduanById(aduanId) } }
 
-    var selectedStatus by remember { mutableStateOf(aduan?.status ?: StatusAduan.DITANGANI) }
-    var catatan by remember { mutableStateOf("") }
-    var catatanError by remember { mutableStateOf(false) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
-    var previewFotoUri by remember { mutableStateOf<String?>(null) }
+    var selectedStatus  by remember { mutableStateOf(aduan?.status ?: StatusAduan.DITANGANI) }
+    var catatan         by remember { mutableStateOf("") }
+    var catatanError    by remember { mutableStateOf(false) }
+    var showSuccess     by remember { mutableStateOf(false) }
+    var previewFotoUri  by remember { mutableStateOf<String?>(null) }
 
-    // ── Dialog sukses ─────────────────────────────────────────────────────────
-    if (showSuccessDialog) {
-        AlertDialog(
-            onDismissRequest = {},
-            containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp),
-            title = {
-                Text("Perubahan Disimpan!", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextPrimary)
-            },
-            text = {
-                Text(
-                    "Status aduan berhasil diperbarui. Pelapor akan melihat perubahan ini secara langsung.",
-                    fontSize = 14.sp, color = TextSecondary
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { showSuccessDialog = false; onBack() },
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentYellow, contentColor = PrimaryBlue),
-                    shape = RoundedCornerShape(10.dp)
-                ) { Text("OK", fontWeight = FontWeight.Bold) }
-            }
+    if (showSuccess) {
+        KonfirmasiDialog(
+            title = "Perubahan Disimpan!",
+            message = "Status aduan berhasil diperbarui. Pelapor akan melihat perubahan ini secara langsung.",
+            confirmLabel = "OK",
+            onConfirm = { showSuccess = false; onBack() }
         )
     }
 
-    // ── Fullscreen foto preview ───────────────────────────────────────────────
     if (previewFotoUri != null) {
-        Dialog(
-            onDismissRequest = { previewFotoUri = null },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
+        Dialog(onDismissRequest = { previewFotoUri = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .clickable { previewFotoUri = null }
+                modifier = Modifier.fillMaxSize().background(Color.Black).clickable { previewFotoUri = null },
+                contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(previewFotoUri?.toUri())
-                        .crossfade(false)
-                        .build(),
+                    model = ImageRequest.Builder(context).data(previewFotoUri?.toUri()).crossfade(false).build(),
                     contentDescription = "Preview foto",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.Center),
+                    modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.Fit
                 )
-                // Tombol tutup
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                        .size(36.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                    modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
+                        .size(36.dp).background(Color.Black.copy(alpha = 0.6f), androidx.compose.foundation.shape.CircleShape)
                         .clickable { previewFotoUri = null },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Tutup",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.Filled.Close, contentDescription = "Tutup", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
             }
         }
@@ -122,22 +88,16 @@ fun KelolaAduanScreen(
 
     if (aduan == null) {
         Scaffold(
+            containerColor = BackgroundLight,
             topBar = {
                 TopAppBar(
                     title = { Text("Kelola Aduan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue) },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = PrimaryBlue)
-                        }
-                    },
+                    navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = PrimaryBlue) } },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
                 )
-            },
-            containerColor = BackgroundLight
-        ) { inner ->
-            Box(Modifier.fillMaxSize().padding(inner), Alignment.Center) {
-                Text("Aduan tidak ditemukan", color = TextSecondary)
             }
+        ) { inner ->
+            Box(Modifier.fillMaxSize().padding(inner), Alignment.Center) { Text("Aduan tidak ditemukan", color = TextSecondary) }
         }
         return
     }
@@ -149,14 +109,8 @@ fun KelolaAduanScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = {
-                        Text("Kelola Aduan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = PrimaryBlue)
-                        }
-                    },
+                    title = { Text("Kelola Aduan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue) },
+                    navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = PrimaryBlue) } },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
                 )
                 HorizontalDivider(color = InputBorder, thickness = 0.8.dp)
@@ -164,52 +118,29 @@ fun KelolaAduanScreen(
         },
         bottomBar = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BackgroundLight)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 10.dp, bottom = 20.dp)
+                modifier = Modifier.fillMaxWidth().background(BackgroundLight)
+                    .padding(horizontal = 16.dp).padding(top = 10.dp, bottom = 20.dp)
             ) {
-                Button(
+                PrimaryButton(
+                    text = "Simpan Perubahan",
+                    icon = Icons.Filled.Save,
                     onClick = {
-                        // Validasi: catatan wajib diisi jika status Batal
                         if (selectedStatus == StatusAduan.BATAL && catatan.isBlank()) {
-                            catatanError = true
-                            return@Button
+                            catatanError = true; return@PrimaryButton
                         }
                         catatanError = false
-                        AppState.updateAduan(
-                            id = aduanId,
-                            statusBaru = selectedStatus,
-                            catatan = catatan
-                        )
+                        AppState.updateAduan(id = aduanId, statusBaru = selectedStatus, catatan = catatan)
                         catatan = ""
-                        showSuccessDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AccentYellow,
-                        contentColor = PrimaryBlue
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    Icon(Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Simpan Perubahan", fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                }
+                        showSuccess = true
+                    }
+                )
             }
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Card Info Aduan ───────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
@@ -217,35 +148,22 @@ fun KelolaAduanScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 border = BorderStroke(0.8.dp, InputBorder)
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(data.ticketNumber, fontSize = 11.sp, color = TextHint, fontWeight = FontWeight.Medium)
                     Text(data.judul, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Text("Pelapor: ${data.pelapor}", fontSize = 13.sp, color = TextSecondary)
-
                     HorizontalDivider(color = InputBorder, thickness = 0.5.dp)
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         DetailInfoItem(Modifier.weight(1f), "KATEGORI", data.kategori.label)
-                        DetailInfoItem(Modifier.weight(1f), "LOKASI", data.lokasi)
+                        DetailInfoItem(Modifier.weight(1f), "LOKASI",   data.lokasi)
                     }
-
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("DESKRIPSI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                            letterSpacing = 0.8.sp, color = TextSecondary)
+                        Text("DESKRIPSI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.8.sp, color = TextSecondary)
                         Text(data.deskripsi, fontSize = 13.sp, color = TextPrimary, lineHeight = 20.sp)
                     }
-
-                    // Lampiran foto
                     if (data.fotoUris.isNotEmpty()) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("LAMPIRAN", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.8.sp, color = TextSecondary)
+                            Text("LAMPIRAN", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.8.sp, color = TextSecondary)
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 itemsIndexed(data.fotoUris) { _, uriStr ->
                                     FotoLampiranItem(uriStr = uriStr, onClick = { previewFotoUri = uriStr })
@@ -256,61 +174,39 @@ fun KelolaAduanScreen(
                 }
             }
 
-            // ── Ubah Status ───────────────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("UBAH STATUS", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.8.sp, color = TextSecondary)
+                Text("UBAH STATUS", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.8.sp, color = TextSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(StatusAduan.DITANGANI, StatusAduan.SELESAI, StatusAduan.BATAL)
-                        .forEach { status ->
-                            StatusPilihButton(
-                                label = status.label,
-                                selected = selectedStatus == status,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    selectedStatus = status
-                                    if (status != StatusAduan.BATAL) catatanError = false
-                                }
-                            )
-                        }
+                    listOf(StatusAduan.DITANGANI, StatusAduan.SELESAI, StatusAduan.BATAL).forEach { status ->
+                        StatusPilihButton(
+                            label = status.label,
+                            selected = selectedStatus == status,
+                            modifier = Modifier.weight(1f),
+                            onClick = { selectedStatus = status; if (status != StatusAduan.BATAL) catatanError = false }
+                        )
+                    }
                 }
             }
 
-            // ── Catatan Teknisi ───────────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("CATATAN TEKNISI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp, color = TextSecondary)
-                    // Penanda wajib saat status Batal dipilih
+                    Text("CATATAN TEKNISI", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.8.sp, color = TextSecondary)
                     if (selectedStatus == StatusAduan.BATAL) {
-                        Text(
-                            "  *wajib diisi jika Batal",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        Text("  *wajib diisi jika Batal", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
                     }
                 }
                 OutlinedTextField(
                     value = catatan,
-                    onValueChange = {
-                        catatan = it
-                        if (catatanError) catatanError = false
-                    },
+                    onValueChange = { catatan = it; if (catatanError) catatanError = false },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                     placeholder = {
                         Text(
-                            if (selectedStatus == StatusAduan.BATAL)
-                                "Tuliskan alasan pembatalan..."
-                            else
-                                "Tambahkan catatan penanganan...",
-                            color = TextHint,
-                            fontSize = 13.sp
+                            if (selectedStatus == StatusAduan.BATAL) "Tuliskan alasan pembatalan..." else "Tambahkan catatan penanganan...",
+                            color = TextHint, fontSize = 13.sp
                         )
                     },
                     isError = catatanError,
-                    supportingText = if (catatanError) {
-                        { Text("Catatan wajib diisi untuk status Batal", color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }
-                    } else null,
+                    supportingText = if (catatanError) {{ Text("Catatan wajib diisi untuk status Batal", color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }} else null,
                     singleLine = false,
                     maxLines = 5,
                     shape = RoundedCornerShape(10.dp),
@@ -323,40 +219,24 @@ fun KelolaAduanScreen(
     }
 }
 
-// ─── Status Pilih Button ──────────────────────────────────────────────────────
 @Composable
-fun StatusPilihButton(
-    label: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
+fun StatusPilihButton(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(42.dp),
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = if (selected) PrimaryBlue else Color.White,
-            contentColor = if (selected) Color.White else TextPrimary
+            contentColor   = if (selected) Color.White else TextPrimary
         ),
-        border = BorderStroke(
-            width = if (selected) 0.dp else 1.dp,
-            color = if (selected) Color.Transparent else CategoryBorder
-        )
+        border = BorderStroke(if (selected) 0.dp else 1.dp, if (selected) Color.Transparent else CategoryBorder)
     ) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-        )
+        Text(label, fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
     }
 }
 
-// ─── Preview ─────────────────────────────────────────────────────────────────
 @Preview(name = "Kelola Aduan Screen", showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun KelolaAduanScreenPreview() {
-    MasITTheme {
-        KelolaAduanScreen(aduanId = "a001", onBack = {})
-    }
+    MasITTheme { KelolaAduanScreen(aduanId = "a001", onBack = {}) }
 }
